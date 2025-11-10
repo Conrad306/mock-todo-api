@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mock Todo Api</title>
+    <link rel="stylesheet" href="css/index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="/js/index.js" defer></script>
+  </head>
+  <body class="min-h-screen p-8" style="background-color: #1a1f26">
+    <div class="max-w-2xl mx-auto">
+      <form
+        class="rounded-lg shadow-md p-6 mb-8"
+        style="background-color: #242b34"
+        id="todoForm"
+      >
+        <div class="flex gap-4 items-end">
+          <div class="relative flex-1">
+            <input
+              type="text"
+              id="todoInput"
+              name="title"
+              class="peer w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-blue-500 placeholder-transparent text-white"
+              style="background-color: #1a1f26; border-color: #3a4149"
+              placeholder="Add a new todo"
+            />
+            <label
+              for="todoInput"
+              class="absolute left-4 -top-2.5 px-1 text-sm text-white transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3 peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-blue-400"
+            >
+              Add a new todo
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            class="px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors hover:cursor-pointer"
+          >
+            Add Todo
+          </button>
+        </div>
+      </form>
+
+      <div class="rounded-lg shadow-md p-6" style="background-color: #242b34">
+        <h2 class="text-xl font-semibold text-gray-200 mb-4">Todos</h2>
+        <ul id="todoList" class="space-y-2 h-full"></ul>
+      </div>
+    </div>
+  </body>
+</html>

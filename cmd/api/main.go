@@ -34,8 +34,11 @@ func main() {
 		log.Fatal("Failed to load DB: ", err)
 	}
 
-	models.DbConnection = db
-	handler.Handler(e)
+	h := handler.Handler{}
+
+	h.DB = db
+
+	h.Handle(e)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

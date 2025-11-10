@@ -1,31 +1,52 @@
 package handler
 
 import (
+	"crypto/rand"
 	"net/http"
 	"strconv"
 
 	"github.com/Conrad306/mock-todo-api/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 )
 
-func Handler(e *echo.Echo) {
 
-	e.Use(middleware.RemoveTrailingSlash())
-
-	todo := e.Group("todo")
-
-
-	todo.GET("/list", ListTodos)
-	todo.POST("/create", CreateTodo)
-	todo.PATCH("/update/:id", UpdateTodo)
-	todo.DELETE("/delete/:id", DeleteTodo)	
+type Handler struct { 
+	DB *gorm.DB
+}
+func (h Handler) Handle(e *echo.Echo) {
+  e.Use(middleware.RemoveTrailingSlash())
+  e.Static("/js", "web/js") 
+  e.Static("/css", "web/css")
+  e.GET("/", h.Redirect)
 	
+  e.GET("/:roomId", func(c echo.Context) error {
+    roomId := c.Param("roomId")
+    if roomId == "js" || roomId == "css" || roomId == "api" {
+      return echo.ErrNotFound
+    }
+    return c.File("web/index.html")
+  })
+  
+	api := e.Group("/api/:roomId")
+  api.GET("/todos", h.ListTodos)
+  api.POST("/todos", h.CreateTodo)
+  api.PUT("/todos/:id", h.UpdateTodo)
+  api.DELETE("/todos/:id", h.DeleteTodo)
 }
 
-func ListTodos(c echo.Context) error {
+func (h Handler) Redirect(c echo.Context) error {
+	return c.Redirect(302, "/" + rand.Text())
+}
+
+
+func (h Handler) ListTodos(c echo.Context) error {
+
+	roomId := c.Param("roomId") 
+
 	var todos []models.TodoCard 
-	result := models.DbConnection.Find(&todos)
+	result := h.DB.Where("room_id = ?", roomId).Find(&todos)
 
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, result.Error.Error())
@@ -33,16 +54,19 @@ func ListTodos(c echo.Context) error {
 	return c.JSON(http.StatusOK, todos)
 }
 
-func CreateTodo(c echo.Context) error {
+func (h Handler) CreateTodo(c echo.Context) error {
 	title := c.FormValue("title")
+	roomId := c.Param("roomId") 
+
 	var completed = false 
 
 	var todo = models.TodoCard {
 		Title: title, 
 		Completed: completed,
+		RoomId: roomId,
 	}
 
-	result := models.DbConnection.Create(&todo)
+	result := h.DB.Create(&todo)
 
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, result.Error.Error())
@@ -51,11 +75,13 @@ func CreateTodo(c echo.Context) error {
 	return c.JSON(http.StatusOK, todo)
 }
 
-func UpdateTodo(c echo.Context) error {
+func (h Handler) UpdateTodo(c echo.Context) error {
 	
 	idParam := c.Param("id")
 	titleFormValue := c.FormValue("title") 
 	completedFormValue := c.FormValue("completed") 
+	roomId := c.Param("roomId") 
+
 
 
 	id, err := strconv.ParseInt(idParam, 10, 32)
@@ -75,9 +101,10 @@ func UpdateTodo(c echo.Context) error {
 	card := models.TodoCard {
 		Title: titleFormValue,
 		Completed: completed,
+		RoomId: roomId,
 	}
 
-	result := models.DbConnection.Where("id = ?", id).Updates(&card)
+	result := h.DB.Where("id = ?", id).Updates(&card)
 
 
 	if result.Error != nil { 
@@ -88,8 +115,8 @@ func UpdateTodo(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
-func DeleteTodo(c echo.Context) error {
-	
+func (h Handler) DeleteTodo(c echo.Context) error {
+	roomId := c.Param("roomId") 
 	idParam := c.Param("id")
 
 	id, err := strconv.ParseInt(idParam, 10, 32)
@@ -99,9 +126,11 @@ func DeleteTodo(c echo.Context) error {
 	}
 
 
-	card := models.TodoCard{}
+	card := models.TodoCard{
+		RoomId: roomId,
+	}
 	
-	result := models.DbConnection.Where("id = ?", id).Delete(&card)
+	result := h.DB.Where("id = ?", id).Delete(&card)
 
 
 	if result.Error != nil { 
