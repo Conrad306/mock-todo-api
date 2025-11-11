@@ -4,9 +4,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var DbConnection *gorm.DB
-
-
 type TodoCard struct {
 	gorm.Model
 	RoomId			string		`json:"roomId"`
