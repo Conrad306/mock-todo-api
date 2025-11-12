@@ -29,3 +29,29 @@
   width: 24px;
   height: 24px;
 }
+
+.btn-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.btn-container > button {
+  padding: 12px;
+  border-radius: 12px;
+  width: 100px;
+  text-align: center;
+}
+
+.btn-container > button:hover {
+  cursor: pointer;
+}
+.edit-btn {
+  background-color: #5b64c7;
+}
+
+.delete-btn {
+  background-color: #ed4245;
+}

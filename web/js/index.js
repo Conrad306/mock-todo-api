@@ -13,6 +13,18 @@ async function addTodo(todo) {
   });
 }
 
+async function deleteTodo(id) {
+  const res = await fetch(`/api/${roomId}/todos/${id}`, {
+    method: "DELETE",
+  });
+
+  if (res.status == 500) {
+    throw new Error("Failed to delete todo item.");
+  }
+}
+
+// async function updateTodo() {}
+
 const form = document.getElementById("todoForm");
 
 form.addEventListener("submit", async (e) => {
@@ -23,6 +35,8 @@ form.addEventListener("submit", async (e) => {
   await addTodo(data);
 
   const todos = await getTodos();
+
+  document.getElementById("todoInput").value = "";
 
   renderTodos(todos);
 });
@@ -48,6 +62,7 @@ function createTodoCardItem(todo) {
   const li = document.createElement("li");
 
   const cardBase = document.createElement("div");
+  cardBase.id = todo.ID;
   cardBase.className = "todo-card";
 
   const title = document.createElement("h3");
@@ -67,8 +82,40 @@ function createTodoCardItem(todo) {
     todo.UpdatedAt ? `Updated: ${todo.UpdatedAt}` : ""
   }`;
 
-  cardBase.append(title, completedCheckbox, timestampFooter);
+  const buttonContainer = document.createElement("div");
+
+  buttonContainer.className = "btn-container";
+
+  const editButton = document.createElement("button");
+  const deleteButton = document.createElement("button");
+
+  editButton.innerText = "Edit";
+  editButton.className = "edit-btn";
+  editButton.id = generateRandomId();
+
+  deleteButton.innerText = "Delete";
+  deleteButton.className = "delete-btn";
+  deleteButton.id = generateRandomId();
+
+  buttonContainer.append(editButton, deleteButton);
+
+  editButton.onclick = (event) => {};
+
+  deleteButton.onclick = async (_) => {
+    try {
+      await deleteTodo(todo.ID);
+      cardBase.remove();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  cardBase.append(title, completedCheckbox, timestampFooter, buttonContainer);
 
   li.appendChild(cardBase);
   return li;
+}
+
+function generateRandomId() {
+  return Math.random().toString(36).slice(3);
 }
